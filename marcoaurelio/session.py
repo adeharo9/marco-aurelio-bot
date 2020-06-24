@@ -17,13 +17,13 @@ class Session:
         self._curr_block = -1;
 
         self._timefunc = timefunc
-        self._scheduler = BackgroundScheduler(daemon=True)
+        self._scheduler = BackgroundScheduler()
 
     def name(self):
         return self._name
 
-    def finished(self):
-        return self._curr_block >= len(self._blocks)
+    def active(self):
+        return self._curr_block >= 0 and self._curr_block < len(self._blocks)
 
     def current_block(self):
         if self._curr_block >= 0 and self._curr_block < len(self._blocks):
@@ -41,9 +41,8 @@ class Session:
         self.next()
 
     def stop(self):
-        if not self.finished():
-            self._scheduler.remove_all_jobs()
-            self._scheduler.shutdown()
+        self._scheduler.remove_all_jobs()
+        self._scheduler.shutdown()
 
     def config(self, args):
         i = 0
