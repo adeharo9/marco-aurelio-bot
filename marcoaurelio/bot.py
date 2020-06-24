@@ -87,6 +87,9 @@ class MarcoAurelio(discord.Client):
         embed.add_field(name=help_embed.F5_NAME,
                         value=help_embed.F5_VALUE,
                         inline=help_embed.F5_INLINE)
+        embed.add_field(name=help_embed.F6_NAME,
+                        value=help_embed.F6_VALUE,
+                        inline=help_embed.F6_INLINE)
         await context.channel.send(embed=embed)
 
     async def _cmd_new(self, context, args):

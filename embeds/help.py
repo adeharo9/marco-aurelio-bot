@@ -14,18 +14,23 @@ F2_VALUE = 'Crea una nueva sesión con ID {id}'
 F2_INLINE = True
 
 # Field 3
-F3_NAME = '`!config {id} {name} {min}`'
-F3_VALUE = 'Configura la sesión {id} con bloques de trabajo de nombre {name}' \
-           ' (opcional) y duración {min}. Se pueden especificar tantos ' \
-           'bloques de trabajo como sea necesario'
+F3_NAME = '`!remove {id}`'
+F3_VALUE = 'Borra la sesión {id}'
 F3_INLINE = True
 
 # Field 4
-F4_NAME = '`!start {id}`'
-F4_VALUE = 'Comienza la sesión {id}'
+F4_NAME = '`!config {id} {name} {min}`'
+F4_VALUE = 'Configura la sesión {id} con bloques de trabajo de nombre {name}' \
+           ' (opcional) y duración {min}. Se pueden especificar tantos ' \
+           'bloques de trabajo como sea necesario'
 F4_INLINE = True
 
 # Field 5
-F5_NAME = '`!stop {id}`'
-F5_VALUE = 'Termina la sesión {id}'
+F5_NAME = '`!start {id}`'
+F5_VALUE = 'Comienza la sesión {id}'
 F5_INLINE = True
+
+# Field 6
+F6_NAME = '`!stop {id}`'
+F6_VALUE = 'Termina la sesión {id}'
+F6_INLINE = True
