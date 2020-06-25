@@ -30,7 +30,7 @@ F2_INLINE = False
 # Field 3
 F3_NAME = '**`!config {id} {name} {min}`**'
 F3_VALUE = 'Configura la sesión `{id}` con bloques de trabajo de nombre ' \
-           '`{name}` (opcional) y duración `{min}`.\nSe pueden especificar ' \
+           '`{name}` (opcional) y duración `{min}`\nSe pueden especificar ' \
            'tantos bloques de trabajo como sea necesario'
 F3_INLINE = False
 
