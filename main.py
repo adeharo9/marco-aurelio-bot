@@ -1,7 +1,7 @@
 #!/usr/bin/env
 
 import env
-from marcoaurelio.bot import MarcoAurelio
+from marcoaurelio import MarcoAurelio
 
 
 env.load_dotenv()

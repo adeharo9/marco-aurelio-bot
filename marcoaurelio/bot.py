@@ -2,16 +2,20 @@ import re
 import env
 import random
 import string
-import discord
-import embeds.help as help_embed
+import utils.uuid as uuid
+import strings.help as help_embed
+import strings.error as error_str
 
-from math import floor
 from dotmap import DotMap
+from discord import Embed
+from discord import Client
 from marcoaurelio.session import Session
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from marcoaurelio.exceptions import Error, InvalidNArgsError, NotFoundError, \
+                                    AlreadyFoundError
 
 
-class MarcoAurelio(discord.Client):
+class MarcoAurelio(Client):
 
     def __init__(self, cmd_prefix='!'):
         self._sessions = {}
@@ -50,28 +54,30 @@ class MarcoAurelio(discord.Client):
         command = args.pop(0).lower()
 
         cmd_handler = self._cmd_handlers.get(command, lambda *_: None)
-        response = await cmd_handler(context, args)
 
-        await message.channel.send(response)
+        try:
+            await cmd_handler(context, args)
+        except Error as err:
+            await context.channel.send(str(err))
 
     async def _cmd_config(self, context, args):
         if len(args) < 2:
-            return 'Invalid number of parameters'
+            raise InvalidNArgsError('!config', 'at least 2', len(args))
 
-        uuid = args.pop(0)
+        _uuid = args.pop(0)
 
-        if uuid not in self._sessions:
-            return f'Session **`{uuid}`** does not exist!'
+        if _uuid not in self._sessions:
+            raise NotFoundError(f'Session **`{_uuid}`** does not exist!')
 
-        session = self._sessions[uuid]
+        session = self._sessions[_uuid]
         session.config(args)
 
-        return f'Session **`{uuid}`** correctly configured!'
+        await context.channel.send(f'Session **`{_uuid}`** correctly configured!')
 
     async def _cmd_help(self, context, args):
-        embed = discord.Embed(title=help_embed.TITLE,
-                              description=help_embed.DESCRIPTION,
-                              color=help_embed.COLOR)
+        embed = Embed(title=help_embed.TITLE,
+                      description=help_embed.DESCRIPTION,
+                      color=help_embed.COLOR)
         embed.add_field(name=help_embed.F1_NAME,
                         value=help_embed.F1_VALUE,
                         inline=help_embed.F1_INLINE)
@@ -94,82 +100,81 @@ class MarcoAurelio(discord.Client):
 
     async def _cmd_new(self, context, args):
         if len(args) > 1:
-            return 'Invalid number of parameters'
+            raise InvalidNArgsError('!new', 'at most 1', len(args))
 
         if len(args) <= 0:
-            uuid = self._new_uuid()
-            while uuid in self._sessions:
-                uuid = self._new_uuid()
+            _uuid = uuid.new()
+            while _uuid in self._sessions:
+                _uuid = uuid.new()
         else:
-            uuid = args[0]
-            if uuid in self._sessions:
-                return f'Session **`{uuid}`** already exists!'
+            _uuid = args[0]
+            if _uuid in self._sessions:
+                raise AlreadyFoundError(f'Session **`{_uuid}`** already exists!')
 
-        self._sessions[uuid] = Session(uuid)
+        self._sessions[_uuid] = Session(_uuid)
 
-        return f'Your session UUID is **`{uuid}`**'
+        await context.channel.send(f'Your session UUID is **`{_uuid}`**')
 
     async def _cmd_start(self, context, args):
         if len(args) != 1:
-            return 'Invalid number of parameters'
+            raise InvalidNArgsError('!start', 'exactly 1', len(args))
 
-        uuid = args[0]
+        _uuid = args[0]
 
-        if uuid not in self._sessions:
-            return f'Session **`{uuid}`** does not exist!'
+        if _uuid not in self._sessions:
+            raise NotFoundError(f'Session **`{_uuid}`** does not exist!')
 
-        session = self._sessions[uuid]
+        session = self._sessions[_uuid]
         context.session = session
 
-        try:
-            session.start()
-            response = f'Session **`{uuid}`** has started!'
+        await context.channel.send(f'Session **`{_uuid}`** has started!')
 
-            self._scheduler.add_job(func=self._sched_info,
-                                    args=(context,),
-                                    trigger='interval',
-                                    seconds=env.SESSION_INFO_INTERVAL,
-                                    id=session.name())
+        if not self._scheduler.running:
             self._scheduler.start()
-        except RuntimeError as err:
-            response = f'Error: {err}'
 
-        return response
+        session.start()
+        self._scheduler.add_job(func=self._sched_info,
+                                args=(context,),
+                                trigger='interval',
+                                seconds=env.SESSION_INFO_INTERVAL,
+                                id=session.name())
+
+        await self._sched_info(context)
 
     async def _cmd_stop(self, context, args):
         if len(args) != 1:
-            return 'Invalid number of parameters'
+            raise InvalidNArgsError('!stop', 'exactly 1', len(args))
 
-        uuid = args[0]
+        _uuid = args[0]
 
-        if uuid not in self._sessions:
-            return f'Session **`{uuid}`** does not exist!'
+        if _uuid not in self._sessions:
+            raise NotFoundError(f'Session **`{_uuid}`** does not exist!')
 
-        session = self._sessions[uuid]
+        session = self._sessions[_uuid]
         session.stop()
 
         self._scheduler.remove_job(session.name())
 
-        return f'Session **`{uuid}`** has been stopped!'
+        await context.channel.send(f'Session **`{_uuid}`** has been stopped!')
 
     async def _cmd_remove(self, context, args):
         if len(args) != 1:
-            return 'Invalid number of parameters'
+            raise InvalidNArgsError('!remove', 'exactly 1', len(args))
 
-        uuid = args[0]
+        _uuid = args[0]
 
-        if uuid not in self._sessions:
-            return f'Session **`{uuid}`** does not exist!'
+        if _uuid not in self._sessions:
+            raise NotFoundError(f'Session **`{_uuid}`** does not exist!')
 
-        del self._sessions[uuid]
+        del self._sessions[_uuid]
 
-        return f'Session **`{uuid}`** has been correctly deleted!'
+        await context.channel.send(f'Session **`{_uuid}`** has been correctly deleted!')
 
     async def _sched_info(self, context):
         block = context.session.current_block()
 
         if context.session.active():
-            m, s = divmod(block.remaining(), 60)
+            m, s = divmod(round(block.remaining()), 60)
             h, m = divmod(m, 60)
 
             message = f'Session `{context.session.name()}` | ' \
@@ -179,8 +184,3 @@ class MarcoAurelio(discord.Client):
             await context.channel.send(message)
         else:
             self._scheduler.remove_job(context.session.name())
-
-    def _new_uuid(self, numchar=32):
-        _id = ''.join(random.choice(string.ascii_uppercase +
-              string.ascii_lowercase + string.digits) for _ in range(32))
-        return _id

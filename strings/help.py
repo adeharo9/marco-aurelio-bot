@@ -9,7 +9,7 @@ F1_VALUE = 'Muestra este panel de ayuda'
 F1_INLINE = True
 
 # Field 2
-F2_NAME = '`!new {id}`'
+F2_NAME = '`!new \{id\}`'
 F2_VALUE = 'Crea una nueva sesión con ID {id}'
 F2_INLINE = True
 

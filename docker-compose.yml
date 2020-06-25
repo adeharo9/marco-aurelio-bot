@@ -1,0 +1,29 @@
+version: "3.7"
+services:
+    redis:
+        image: redis:6.0.5-buster
+        hostname: redis
+        networks:
+            - local
+        ports:
+            - 6379:6379
+    python-bot:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        hostname: python-bot
+        environment:
+            - SESSION_INFO_INTERVAL=10
+        networks:
+            - internet
+            - local
+        volumes:
+            - "./marcoaurelio:/app/marcoaurelio:ro"
+            - "./strings:/app/strings:ro"
+            - "./utils:/app/utils:ro"
+        working_dir: /app
+networks:
+    local:
+        driver: bridge
+    internet:
+        driver: bridge

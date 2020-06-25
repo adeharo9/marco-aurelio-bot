@@ -3,6 +3,7 @@ import datetime
 
 from math import inf as INF
 from marcoaurelio.block import Block
+from marcoaurelio.exceptions import NotFoundError
 from apscheduler.schedulers.background import BackgroundScheduler
 
 
@@ -33,7 +34,7 @@ class Session:
 
     def start(self):
         if len(self._blocks) <= 0:
-            raise RuntimeError('no blocks to start!')
+            raise NotFoundError('No blocks to start!')
 
         self._start_time = self._timefunc()
 
@@ -46,7 +47,7 @@ class Session:
 
     def config(self, args):
         i = 0
-        name = f'__block_{i}'
+        name = f'_block_{i}'
         for arg in args:
             try:
                 duration_s = int(arg) * 60
