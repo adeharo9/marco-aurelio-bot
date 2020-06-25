@@ -1,19 +1,19 @@
 # Embed parameters
 TITLE = ''
-DESCRIPTION = 'Marco Aurelio, el marco dorado que indica cuándo trabajar y ' \
+DESCRIPTION = '{:s}, el marco dorado que indica cuándo trabajar y ' \
               'cuándo no a sus súbditos. ¡Ave, César!'
 URL = 'https://github.com/adeharo9/marco-aurelio-bot'
 COLOR = 0xffff00
 
 # Footer
 FOOTER_ICON_URL = 'https://raw.githubusercontent.com/adeharo9/marco-aurelio-bot/master/icon.png'
-FOOTER_TEXT = 'MarcoAurelio by adeharo9'
+FOOTER_TEXT = 'marco-aurelio-bot by adeharo9'
 
 # Thumbnail
 THUMBNAIL_URL = 'https://raw.githubusercontent.com/adeharo9/marco-aurelio-bot/master/icon.png'
 
 # Author
-AUTHOR_NAME = 'Comandos de Marco Aurelio 💻'
+AUTHOR_NAME = 'Comandos de {:s} 💻'
 AUTHOR_URL = 'https://github.com/adeharo9/marco-aurelio-bot'
 AUTHOR_ICON_URL = 'https://raw.githubusercontent.com/adeharo9/marco-aurelio-bot/master/icon.png'
 
