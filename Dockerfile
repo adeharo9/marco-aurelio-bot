@@ -21,6 +21,4 @@ VOLUME /app/strings
 VOLUME /app/utils
 
 # Expose server ports and start command
-EXPOSE 80
-EXPOSE 443
 CMD ["python", "main.py"]
