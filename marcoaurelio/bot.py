@@ -76,13 +76,15 @@ class MarcoAurelio(Client):
 
     async def _cmd_help(self, context, args):
         embed = Embed(title=help_embed.TITLE,
-                      description=help_embed.DESCRIPTION,
+                      description=help_embed.DESCRIPTION.format(
+                          self.user.display_name),
                       url=help_embed.URL,
                       color=help_embed.COLOR)
         embed.set_footer(icon_url=help_embed.FOOTER_ICON_URL,
                          text=help_embed.FOOTER_TEXT)
         embed.set_thumbnail(url=help_embed.THUMBNAIL_URL)
-        embed.set_author(name=help_embed.AUTHOR_NAME,
+        embed.set_author(name=help_embed.AUTHOR_NAME.format(
+                          self.user.display_name),
                          url=help_embed.AUTHOR_URL,
                          icon_url=help_embed.AUTHOR_ICON_URL)
         embed.add_field(name=help_embed.F1_NAME,
