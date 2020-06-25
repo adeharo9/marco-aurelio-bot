@@ -1,5 +1,5 @@
 # Embed parameters
-TITLE = '💻 Comandos de 🟨Marco Aurelio🟨'
+TITLE = '💻 Comandos de Marco Aurelio'
 DESCRIPTION = ''
 COLOR = 0xffff00
 
