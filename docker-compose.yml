@@ -19,8 +19,6 @@ services:
             - local
         volumes:
             - "./marcoaurelio:/app/marcoaurelio:ro"
-            - "./strings:/app/strings:ro"
-            - "./utils:/app/utils:ro"
         working_dir: /app
 networks:
     local:

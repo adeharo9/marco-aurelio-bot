@@ -6,16 +6,11 @@ URL = 'https://github.com/adeharo9/marco-aurelio-bot'
 COLOR = 0xffff00
 
 # Footer
-FOOTER_ICON_URL = 'https://raw.githubusercontent.com/adeharo9/marco-aurelio-bot/master/icon.png'
 FOOTER_TEXT = 'marco-aurelio-bot by adeharo9'
-
-# Thumbnail
-THUMBNAIL_URL = 'https://raw.githubusercontent.com/adeharo9/marco-aurelio-bot/master/icon.png'
 
 # Author
 AUTHOR_NAME = 'Comandos de {:s} 💻'
 AUTHOR_URL = 'https://github.com/adeharo9/marco-aurelio-bot'
-AUTHOR_ICON_URL = 'https://raw.githubusercontent.com/adeharo9/marco-aurelio-bot/master/icon.png'
 
 # Field 1
 F1_NAME = '**`!new {id}`**'

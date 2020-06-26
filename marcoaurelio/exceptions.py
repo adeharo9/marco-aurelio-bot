@@ -1,4 +1,4 @@
-from strings.error import *
+from .strings.error import *
 
 
 class Error(Exception):

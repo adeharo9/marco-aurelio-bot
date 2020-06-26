@@ -1,18 +1,15 @@
 import re
-import env
-import random
-import string
-import utils.uuid as uuid
-import strings.help as help_embed
-import strings.error as error_str
+import dotenvpy as env
 
 from dotmap import DotMap
-from discord import Embed
-from discord import Client
-from marcoaurelio.session import Session
+from discord import Client, Embed
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from marcoaurelio.exceptions import Error, InvalidNArgsError, NotFoundError, \
-                                    AlreadyFoundError
+
+from .utils import uuid
+from .session import Session
+from .strings import help as help_embed
+from .exceptions import Error, InvalidNArgsError, NotFoundError, \
+                        AlreadyFoundError
 
 
 class MarcoAurelio(Client):
@@ -80,13 +77,13 @@ class MarcoAurelio(Client):
                           self.user.display_name),
                       url=help_embed.URL,
                       color=help_embed.COLOR)
-        embed.set_footer(icon_url=help_embed.FOOTER_ICON_URL,
+        embed.set_footer(icon_url=str(self.user.avatar_url),
                          text=help_embed.FOOTER_TEXT)
-        embed.set_thumbnail(url=help_embed.THUMBNAIL_URL)
+        embed.set_thumbnail(url=str(self.user.avatar_url))
         embed.set_author(name=help_embed.AUTHOR_NAME.format(
                           self.user.display_name),
                          url=help_embed.AUTHOR_URL,
-                         icon_url=help_embed.AUTHOR_ICON_URL)
+                         icon_url=str(self.user.avatar_url))
         embed.add_field(name=help_embed.F1_NAME,
                         value=help_embed.F1_VALUE,
                         inline=help_embed.F1_INLINE)

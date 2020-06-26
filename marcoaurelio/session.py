@@ -2,9 +2,10 @@ import time
 import datetime
 
 from math import inf as INF
-from marcoaurelio.block import Block
-from marcoaurelio.exceptions import NotFoundError
 from apscheduler.schedulers.background import BackgroundScheduler
+
+from .block import Block
+from .exceptions import NotFoundError
 
 
 class Session:
@@ -47,7 +48,7 @@ class Session:
 
     def config(self, args):
         i = 0
-        name = f'_block_{i}'
+        name = f'__block_{i}'
         for arg in args:
             try:
                 duration_s = int(arg) * 60
@@ -56,7 +57,7 @@ class Session:
                 self._blocks.append(block)
 
                 i += 1
-                name = f'_block_{i}'
+                name = f'__block_{i}'
             except ValueError:
                 name = arg
 

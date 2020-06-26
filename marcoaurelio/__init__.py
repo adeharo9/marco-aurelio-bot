@@ -1,1 +1,1 @@
-from marcoaurelio.bot import MarcoAurelio
+from .bot import MarcoAurelio

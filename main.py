@@ -1,6 +1,6 @@
 #!/usr/bin/env
 
-import env
+import dotenvpy as env
 from marcoaurelio import MarcoAurelio
 
 
