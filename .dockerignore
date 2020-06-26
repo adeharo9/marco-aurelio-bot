@@ -1,0 +1,31 @@
+# Docker files
+**/.dockerignore
+**/docker-compose.yml
+
+# Git files and directories
+**/.git
+**/.gitignore
+**/.gitmodules
+
+# Environment variables
+.env.dist
+
+# Virtual environments
+env
+venv
+ENV
+env.bak
+venv.bak
+
+# NodeJS modules
+node_modules
+
+# Python
+**/__pycache__
+
+# VSCode
+.vscode
+
+# Heroku
+**/Procfile
+**/runtime.txt
