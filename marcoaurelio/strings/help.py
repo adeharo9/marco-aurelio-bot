@@ -38,3 +38,8 @@ F4_INLINE = True
 F5_NAME = '**`!stop {id}`**'
 F5_VALUE = 'Termina la sesión `{id}`'
 F5_INLINE = False
+
+# Field 6
+F6_NAME = '**`!remaining {id}`**'
+F6_VALUE = 'Retorna el tiempo restante del bloque actual de la sesión `{id}`'
+F6_INLINE = False
