@@ -1,4 +1,4 @@
-from strings.error import *
+from .strings.error import *
 
 
 class Error(Exception):
@@ -16,4 +16,12 @@ class NotFoundError(Error):
 
 
 class AlreadyFoundError(Error):
+    pass
+
+
+class NotRunningError(Error):
+    pass
+
+
+class AlreadyRunningError(Error):
     pass

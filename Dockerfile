@@ -1,9 +1,9 @@
 FROM python:3.8.3-slim-buster
 
-# Copy files to image
+# Copy dirs and files to image
 WORKDIR /app
+COPY dotenvpy ./dotenvpy
 COPY .env .
-COPY env.py .
 COPY main.py .
 COPY requirements.txt .
 COPY Dockerfile .
@@ -15,10 +15,6 @@ RUN pip install -r requirements.txt
 
 # Attach volume to bot directory
 VOLUME /app/marcoaurelio
-# Attach volume to strings directory
-VOLUME /app/strings
-# Attach volume to utils directory
-VOLUME /app/utils
 
 # Expose server ports and start command
 CMD ["python", "main.py"]

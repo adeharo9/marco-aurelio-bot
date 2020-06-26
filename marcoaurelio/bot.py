@@ -1,18 +1,16 @@
 import re
-import env
-import random
-import string
-import utils.uuid as uuid
-import strings.help as help_embed
-import strings.error as error_str
+import dotenvpy as env
 
 from dotmap import DotMap
-from discord import Embed
-from discord import Client
-from marcoaurelio.session import Session
+from discord import Client, Embed
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from marcoaurelio.exceptions import Error, InvalidNArgsError, NotFoundError, \
-                                    AlreadyFoundError
+
+from .utils import uuid
+from .session import Session
+from .strings import help as help_embed
+from .exceptions import Error, InvalidNArgsError, NotFoundError, \
+                        AlreadyFoundError, NotRunningError, \
+                        AlreadyRunningError
 
 
 class MarcoAurelio(Client):
@@ -25,6 +23,7 @@ class MarcoAurelio(Client):
             'config': self._cmd_config,
             'help': self._cmd_help,
             'new': self._cmd_new,
+            'remaining': self._cmd_remaining,
             'remove': self._cmd_remove,
             'start': self._cmd_start,
             'stop': self._cmd_stop
@@ -72,7 +71,8 @@ class MarcoAurelio(Client):
         session = self._sessions[_uuid]
         session.config(args)
 
-        await context.channel.send(f'Session **`{_uuid}`** correctly configured!')
+        await context.channel.send(f'Session **`{_uuid}`** correctly '
+                                   'configured!')
 
     async def _cmd_help(self, context, args):
         embed = Embed(title=help_embed.TITLE,
@@ -80,13 +80,13 @@ class MarcoAurelio(Client):
                           self.user.display_name),
                       url=help_embed.URL,
                       color=help_embed.COLOR)
-        embed.set_footer(icon_url=help_embed.FOOTER_ICON_URL,
+        embed.set_footer(icon_url=str(self.user.avatar_url),
                          text=help_embed.FOOTER_TEXT)
-        embed.set_thumbnail(url=help_embed.THUMBNAIL_URL)
+        embed.set_thumbnail(url=str(self.user.avatar_url))
         embed.set_author(name=help_embed.AUTHOR_NAME.format(
                           self.user.display_name),
                          url=help_embed.AUTHOR_URL,
-                         icon_url=help_embed.AUTHOR_ICON_URL)
+                         icon_url=str(self.user.avatar_url))
         embed.add_field(name=help_embed.F1_NAME,
                         value=help_embed.F1_VALUE,
                         inline=help_embed.F1_INLINE)
@@ -102,6 +102,9 @@ class MarcoAurelio(Client):
         embed.add_field(name=help_embed.F5_NAME,
                         value=help_embed.F5_VALUE,
                         inline=help_embed.F5_INLINE)
+        embed.add_field(name=help_embed.F6_NAME,
+                        value=help_embed.F6_VALUE,
+                        inline=help_embed.F6_INLINE)
         await context.channel.send(embed=embed)
 
     async def _cmd_new(self, context, args):
@@ -115,7 +118,8 @@ class MarcoAurelio(Client):
         else:
             _uuid = args[0]
             if _uuid in self._sessions:
-                raise AlreadyFoundError(f'Session **`{_uuid}`** already exists!')
+                raise AlreadyFoundError(f'Session **`{_uuid}`** already '
+                                        'exists!')
 
         self._sessions[_uuid] = Session(_uuid)
 
@@ -133,19 +137,22 @@ class MarcoAurelio(Client):
         session = self._sessions[_uuid]
         context.session = session
 
-        await context.channel.send(f'Session **`{_uuid}`** has started!')
+        if session.active():
+            raise AlreadyRunningError(f'Session **`{_uuid}`** is already '
+                                      'running!')
 
         if not self._scheduler.running:
             self._scheduler.start()
 
         session.start()
-        self._scheduler.add_job(func=self._sched_info,
+        self._scheduler.add_job(func=self._on_interval,
                                 args=(context,),
                                 trigger='interval',
                                 seconds=env.SESSION_INFO_INTERVAL,
                                 id=session.name())
 
-        await self._sched_info(context)
+        await context.channel.send(f'Session **`{_uuid}`** has started!')
+        await self._on_interval(context)
 
     async def _cmd_stop(self, context, args):
         if len(args) != 1:
@@ -157,9 +164,17 @@ class MarcoAurelio(Client):
             raise NotFoundError(f'Session **`{_uuid}`** does not exist!')
 
         session = self._sessions[_uuid]
-        session.stop()
 
-        self._scheduler.remove_job(session.name())
+        if not session.active():
+            raise NotRunningError(f'Session **`{_uuid}`** is not running!')
+
+        job = self._scheduler.get_job(session.name())
+        if job is None:
+            raise RuntimeError(f'Session **`{_uuid}`** is running but has no '
+                               'job assigned!')
+
+        session.stop()
+        self._scheduler.remove_job(job.id)
 
         await context.channel.send(f'Session **`{_uuid}`** has been stopped!')
 
@@ -172,21 +187,49 @@ class MarcoAurelio(Client):
         if _uuid not in self._sessions:
             raise NotFoundError(f'Session **`{_uuid}`** does not exist!')
 
+        session = self._sessions[_uuid]
+
+        if session.active():
+            await self._cmd_stop(context, [_uuid])
+
         del self._sessions[_uuid]
 
-        await context.channel.send(f'Session **`{_uuid}`** has been correctly deleted!')
+        await context.channel.send(f'Session **`{_uuid}`** has been correctly '
+                                   'deleted!')
 
-    async def _sched_info(self, context):
+    async def _cmd_remaining(self, context, args):
+        if len(args) != 1:
+            raise InvalidNArgsError('!remaining', 'exactly 1', len(args))
+
+        _uuid = args[0]
+
+        if _uuid not in self._sessions:
+            raise NotFoundError(f'Session **`{_uuid}`** does not exist!')
+
+        session = self._sessions[_uuid]
+        context.session = session
+
+        await self._send_remaining(context)
+
+    async def _send_remaining(self, context):
+        if not context.session.active():
+            raise NotRunningError(f'Session **`{context.session.name()}`** is '
+                                  'not running!')
+
         block = context.session.current_block()
+        m, s = divmod(round(block.remaining()), 60)
+        h, m = divmod(m, 60)
 
+        message = f'Session `{context.session.name()}` | ' \
+            f'Block `{block.name()}` | ' \
+            f'Remaining time: **{h:02d}:{m:02d}:{s:02d}**'
+
+        await context.channel.send(message)
+
+    async def _on_interval(self, context):
         if context.session.active():
-            m, s = divmod(round(block.remaining()), 60)
-            h, m = divmod(m, 60)
-
-            message = f'Session `{context.session.name()}` | ' \
-                      f'Block `{block.name()}` | ' \
-                      f'Remaining time: **{h:02d}:{m:02d}:{s:02d}**'
-
-            await context.channel.send(message)
+            await self._send_remaining(context)
         else:
-            self._scheduler.remove_job(context.session.name())
+            job = self._scheduler.get_job(context.session.name())
+            if job is not None:
+                self._scheduler.remove_job(job.id)

@@ -1,10 +1,11 @@
 import time
+
 from math import inf as INF
 
 
 class Block:
 
-    def __init__(self, duration, name='_block', timefunc = time.monotonic):
+    def __init__(self, duration, name='__block', timefunc=time.monotonic):
         self._duration = duration
         self._name = name
         self._start_time = INF
